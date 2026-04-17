@@ -1,0 +1,58 @@
+/* ============================================================================
+   css/styles.css
+   RESPONSABILIDADE: Estilos customizados que vão além do Tailwind.
+   Use este arquivo apenas quando o Tailwind não oferecer uma classe pronta.
+   ============================================================================ */
+
+/* Fonte principal do sistema */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap');
+
+/* Aplica a fonte em todo o projeto */
+body {
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Fonte serifada para o logo e títulos principais */
+.font-display {
+  font-family: 'DM Serif Display', serif;
+}
+
+/* Scrollbar customizada para a sidebar e tabelas */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4b896;
+  border-radius: 2px;
+}
+
+/* Animação de entrada para os cards do painel */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease both;
+}
+
+/* Delay escalonado para os KPI cards */
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.10s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.20s; }
+
+/* Estilo do overlay de loading */
+#loading-overlay {
+  backdrop-filter: blur(2px);
+}

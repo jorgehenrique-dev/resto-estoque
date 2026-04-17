@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RestôEstoque — Sistema de Gestão</title>
+
+  <!-- Tailwind CSS via CDN (para produção, use o CLI do Tailwind) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Configuração de cores customizadas do Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // Paleta principal: tom quente de restaurante
+            brand: {
+              50:  '#FEF5E4',
+              100: '#FDECC8',
+              200: '#F9D28E',
+              400: '#E8A23A',
+              600: '#B07A3C',
+              700: '#8B5E2A',
+              800: '#6E4A1F',
+              900: '#4A2F10',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Estilos customizados do projeto -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="bg-stone-100 min-h-screen">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       LOADING OVERLAY
+       Aparece enquanto aguarda respostas do Supabase.
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-50 bg-black/20 flex items-center justify-center">
+    <div class="bg-white rounded-xl px-6 py-4 shadow-lg flex items-center gap-3">
+      <div class="w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+      <span class="text-sm text-stone-600 font-medium">Carregando...</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       TELA DE LOGIN (Entrega 04)
+       Exibida antes do usuário autenticar.
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div id="tela-login" class="min-h-screen flex items-center justify-center p-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 w-full max-w-sm">
+
+      <!-- Logo -->
+      <div class="mb-6">
+        <h1 class="font-display text-3xl text-stone-800">🍽 RestôEstoque</h1>
+        <p class="text-sm text-stone-400 mt-1">Sistema de Gestão de Ingredientes</p>
+      </div>
+
+      <!-- Campos de login -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-stone-500 mb-1.5" for="input-login">Usuário</label>
+          <input id="input-login" type="text" placeholder="admin"
+            class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800
+                   focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-stone-500 mb-1.5" for="input-senha">Senha</label>
+          <input id="input-senha" type="password" placeholder="••••"
+            class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800
+                   focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+        </div>
+
+        <!-- Mensagem de erro -->
+        <p id="erro-login" class="hidden text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+          Usuário ou senha incorretos. Tente novamente.
+        </p>
+
+        <button id="btn-login"
+          class="w-full bg-brand-700 hover:bg-brand-800 text-white font-medium text-sm
+                 py-2.5 rounded-lg transition-colors">
+          Entrar
+        </button>
+      </div>
+
+      <p class="text-xs text-stone-400 text-center mt-5">
+        Acesso demo: <strong>admin</strong> / <strong>1234</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       LAYOUT PRINCIPAL (Entrega 05)
+       Visível após o login. Contém sidebar + área de conteúdo.
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div id="layout-app" class="hidden min-h-screen flex">
+
+    <!-- ── SIDEBAR (Menu Lateral) ─────────────────────────────────────── -->
+    <aside class="w-52 min-h-screen bg-brand-800 flex flex-col shrink-0">
+
+      <!-- Logo na sidebar -->
+      <div class="px-5 py-5 border-b border-brand-700">
+        <span class="font-display text-xl text-white">🍽 RestôEstoque</span>
+        <p class="text-xs text-brand-200 mt-0.5">Restaurante</p>
+      </div>
+
+      <!-- Links de navegação -->
+      <nav class="flex-1 py-3 space-y-0.5">
+        <a class="nav-link flex items-center gap-2.5 px-5 py-2.5 text-sm text-brand-200
+                  hover:bg-brand-700 transition-colors cursor-pointer rounded-r-lg mr-2"
+           data-tela="painel">
+          <span>◉</span> Painel
+        </a>
+        <a class="nav-link flex items-center gap-2.5 px-5 py-2.5 text-sm text-brand-200
+                  hover:bg-brand-700 transition-colors cursor-pointer rounded-r-lg mr-2"
+           data-tela="produtos">
+          <span>☰</span> Ingredientes
+        </a>
+        <a class="nav-link flex items-center gap-2.5 px-5 py-2.5 text-sm text-brand-200
+                  hover:bg-brand-700 transition-colors cursor-pointer rounded-r-lg mr-2"
+           data-tela="estoque">
+          <span>↕</span> Estoque
+        </a>
+        <a class="nav-link flex items-center gap-2.5 px-5 py-2.5 text-sm text-brand-200
+                  hover:bg-brand-700 transition-colors cursor-pointer rounded-r-lg mr-2"
+           data-tela="historico">
+          <span>◷</span> Histórico
+        </a>
+      </nav>
+
+      <!-- Usuário logado + botão de logout -->
+      <div class="px-5 py-4 border-t border-brand-700">
+        <p class="text-xs text-brand-200 mb-0.5">Conectado como</p>
+        <p id="nome-usuario" class="text-sm font-medium text-white mb-3">—</p>
+        <button id="btn-logout"
+          class="w-full text-xs text-brand-200 border border-brand-600
+                 hover:bg-brand-700 py-1.5 rounded-lg transition-colors">
+          Sair
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── ÁREA DE CONTEÚDO ────────────────────────────────────────────── -->
+    <main class="flex-1 overflow-y-auto">
+
+      <!-- ══ TELA: PAINEL (Entrega 05 + Dashboard) ══════════════════════ -->
+      <section id="tela-painel" class="tela hidden p-6">
+
+        <h2 class="font-display text-2xl text-stone-800 mb-5">Painel Geral</h2>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="animate-fade-in-up delay-1 bg-white rounded-xl border border-stone-200 p-4">
+            <p class="text-xs text-stone-400 uppercase tracking-wide mb-1">Total de Itens</p>
+            <p id="kpi-total" class="text-3xl font-semibold text-stone-800">—</p>
+          </div>
+          <div class="animate-fade-in-up delay-2 bg-white rounded-xl border border-stone-200 p-4">
+            <p class="text-xs text-stone-400 uppercase tracking-wide mb-1">Estoque Normal</p>
+            <p id="kpi-normal" class="text-3xl font-semibold text-green-600">—</p>
+          </div>
+          <div class="animate-fade-in-up delay-3 bg-white rounded-xl border border-stone-200 p-4">
+            <p class="text-xs text-stone-400 uppercase tracking-wide mb-1">Abaixo do Mínimo</p>
+            <p id="kpi-alerta" class="text-3xl font-semibold text-amber-500">—</p>
+          </div>
+          <div class="animate-fade-in-up delay-4 bg-white rounded-xl border border-stone-200 p-4">
+            <p class="text-xs text-stone-400 uppercase tracking-wide mb-1">Zerados</p>
+            <p id="kpi-zerado" class="text-3xl font-semibold text-red-500">—</p>
+          </div>
+        </div>
+
+        <!-- Alertas automáticos -->
+        <div id="painel-alertas"
+          class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+          <p class="text-sm text-stone-400">Carregando alertas...</p>
+        </div>
+
+        <!-- Tabela resumo -->
+        <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-100">
+            <h3 class="text-sm font-medium text-stone-700">Situação do Estoque</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-stone-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Ingrediente</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Categoria</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Quantidade</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Status</th>
+                </tr>
+              </thead>
+              <tbody id="painel-tabela-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ TELA: INGREDIENTES/PRODUTOS (Entrega 06) ════════════════════ -->
+      <section id="tela-produtos" class="tela hidden p-6">
+
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="font-display text-2xl text-stone-800">Ingredientes</h2>
+          <button id="btn-novo-produto"
+            class="bg-brand-700 hover:bg-brand-800 text-white text-sm font-medium
+                   px-4 py-2 rounded-lg transition-colors">
+            + Novo Ingrediente
+          </button>
+        </div>
+
+        <!-- Campo de busca (filtragem local) -->
+        <div class="mb-4">
+          <input id="input-busca" type="text" placeholder="Buscar por nome ou categoria..."
+            class="w-full max-w-xs border border-stone-200 rounded-lg px-3 py-2 text-sm
+                   focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+        </div>
+
+        <!-- Tabela CRUD -->
+        <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-stone-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Nome</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Categoria</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Quantidade</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Mínimo</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="produtos-tabela-body">
+                <tr>
+                  <td colspan="6" class="text-center py-8 text-stone-400 text-sm">Carregando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ TELA: GESTÃO DE ESTOQUE (Entrega 07) ═══════════════════════ -->
+      <section id="tela-estoque" class="tela hidden p-6">
+
+        <h2 class="font-display text-2xl text-stone-800 mb-2">Gestão de Estoque</h2>
+        <p class="text-sm text-stone-400 mb-5">
+          Lista ordenada pelo <strong class="text-stone-600">algoritmo Bubble Sort</strong> (A → Z).
+        </p>
+
+        <!-- Formulário de movimentação -->
+        <div class="bg-white rounded-xl border border-stone-200 p-6 mb-5 max-w-xl">
+          <h3 class="text-sm font-medium text-stone-700 mb-4">Registrar Movimentação</h3>
+
+          <div class="space-y-4">
+            <!-- Seleção do ingrediente (populado via JS com Bubble Sort) -->
+            <div>
+              <label class="block text-xs font-medium text-stone-500 mb-1.5">Ingrediente</label>
+              <select id="estoque-select-produto"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm
+                       focus:outline-none focus:ring-2 focus:ring-brand-400 transition">
+                <option value="">-- Selecione um ingrediente --</option>
+              </select>
+            </div>
+
+            <!-- Card de info do ingrediente selecionado -->
+            <div id="estoque-info-card" class="hidden bg-stone-50 rounded-lg p-3 border border-stone-200">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-stone-500">Estoque atual: <strong id="estoque-info-atual" class="text-stone-800">—</strong></span>
+                <span id="estoque-info-badge"></span>
+              </div>
+              <div class="text-xs text-stone-400 mt-1">
+                Estoque mínimo: <span id="estoque-info-minimo">—</span>
+              </div>
+            </div>
+
+            <!-- Quantidade -->
+            <div>
+              <label class="block text-xs font-medium text-stone-500 mb-1.5">Quantidade</label>
+              <input id="estoque-quantidade" type="number" min="0.01" step="0.01" placeholder="0.00"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm
+                       focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+            </div>
+
+            <!-- Botões de Entrada e Saída -->
+            <div class="flex gap-3 pt-1">
+              <button id="btn-entrada"
+                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium
+                       text-sm py-2.5 rounded-lg transition-colors">
+                ↑ Entrada
+              </button>
+              <button id="btn-saida"
+                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium
+                       text-sm py-2.5 rounded-lg transition-colors">
+                ↓ Saída
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ TELA: HISTÓRICO DE MOVIMENTAÇÕES ════════════════════════════ -->
+      <section id="tela-historico" class="tela hidden p-6">
+
+        <h2 class="font-display text-2xl text-stone-800 mb-5">Histórico de Movimentações</h2>
+
+        <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-stone-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Data / Hora</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Ingrediente</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Tipo</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-stone-400 uppercase tracking-wide">Quantidade</th>
+                </tr>
+              </thead>
+              <tbody id="historico-tabela-body">
+                <tr>
+                  <td colspan="4" class="text-center py-8 text-stone-400 text-sm">Carregando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div><!-- fim #layout-app -->
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       MODAL DE CADASTRO / EDIÇÃO (Entrega 06)
+       Fica escondido e é exibido pelo app.js via abrirModal()
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <div id="modal-overlay"
+    class="hidden fixed inset-0 z-40 bg-black/30 flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-xl p-6 w-full max-w-md">
+
+      <h3 id="modal-titulo" class="text-base font-medium text-stone-800 mb-5">—</h3>
+
+      <!-- Campo oculto que guarda o ID no modo de edição -->
+      <input id="campo-id" type="hidden" />
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <label class="block text-xs font-medium text-stone-500 mb-1.5">Nome do ingrediente *</label>
+            <input id="campo-nome" type="text" placeholder="Ex: Frango Inteiro"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-500 mb-1.5">Categoria *</label>
+            <input id="campo-categoria" type="text" placeholder="Ex: Carnes"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-500 mb-1.5">Unidade</label>
+            <select id="campo-unidade"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-brand-400 transition">
+              <option value="kg">kg</option>
+              <option value="L">L</option>
+              <option value="un">un</option>
+              <option value="cx">cx</option>
+              <option value="g">g</option>
+              <option value="ml">ml</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-500 mb-1.5">Quantidade atual</label>
+            <input id="campo-quantidade" type="number" min="0" step="0.01" placeholder="0"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-500 mb-1.5">Estoque mínimo</label>
+            <input id="campo-minimo" type="number" min="0" step="0.01" placeholder="0"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações do modal -->
+      <div class="flex gap-3 mt-6">
+        <button id="btn-cancelar-modal"
+          class="flex-1 border border-stone-200 hover:bg-stone-50 text-stone-600
+                 text-sm font-medium py-2.5 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button id="btn-salvar-modal"
+          class="flex-1 bg-brand-700 hover:bg-brand-800 text-white
+                 text-sm font-medium py-2.5 rounded-lg transition-colors">
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SCRIPT PRINCIPAL
+       type="module" é necessário para usar import/export nos arquivos .js
+  ═══════════════════════════════════════════════════════════════════════ -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
