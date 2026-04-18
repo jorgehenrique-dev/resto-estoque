@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RestôEstoque — Sistema de Gestão</title>
+  <title>Pacífico — Sistema de Gestão</title>
 
   <!-- Tailwind CSS via CDN (para produção, use o CLI do Tailwind) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,8 +21,8 @@
               200: '#F9D28E',
               400: '#E8A23A',
               600: '#B07A3C',
-              700: '#8B5E2A',
-              800: '#6E4A1F',
+              700: '#0000CD',
+              800: '#00008B',
               900: '#4A2F10',
             },
           },
@@ -57,15 +57,17 @@
 
       <!-- Logo -->
       <div class="mb-6">
-        <h1 class="font-display text-3xl text-stone-800">🍽 RestôEstoque</h1>
-        <p class="text-sm text-stone-400 mt-1">Sistema de Gestão de Ingredientes</p>
+        <h1 class="font-display text-3xl text-stone-800">
+          <img src="img/Logo_pacífico.svg" alt="Pacífico">
+        </h1>
+        <p class="text-sm text-stone-400 mt-1">Sistema de Gestão de Estoques</p>
       </div>
 
       <!-- Campos de login -->
       <div class="space-y-4">
         <div>
           <label class="block text-xs font-medium text-stone-500 mb-1.5" for="input-login">Usuário</label>
-          <input id="input-login" type="text" placeholder="admin"
+          <input id="input-login" type="text" placeholder="Digite seu usuário"
             class="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800
                    focus:outline-none focus:ring-2 focus:ring-brand-400 transition" />
         </div>
@@ -87,10 +89,6 @@
           Entrar
         </button>
       </div>
-
-      <p class="text-xs text-stone-400 text-center mt-5">
-        Acesso demo: <strong>admin</strong> / <strong>1234</strong>
-      </p>
     </div>
   </div>
 
@@ -104,8 +102,8 @@
     <aside class="w-52 min-h-screen bg-brand-800 flex flex-col shrink-0">
 
       <!-- Logo na sidebar -->
-      <div class="px-5 py-5 border-b border-brand-700">
-        <span class="font-display text-xl text-white">🍽 RestôEstoque</span>
+      <div class="px-6 py-5 border-b border-brand-700">
+        <img src="img/Logo_pacífico.svg" alt="Logo" />
         <p class="text-xs text-brand-200 mt-0.5">Restaurante</p>
       </div>
 
