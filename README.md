@@ -1,4 +1,4 @@
-### Sistema de Gestão de Estoque para Restaurantes> 
+### Sistema de Gestão de Estoque para Restaurantes
 💡 **Chega de planilha! Chega de anotação em papel.**
 O RestôEstoque traz para restaurantes de qualquer porte um controle de estoque simples, bonito e eficiente.
 ## ✨ Funcionalidades
@@ -10,3 +10,5 @@ O RestôEstoque traz para restaurantes de qualquer porte um controle de estoque 
 - 🔍 **Busca em tempo real** na listagem de produtos.
 - ↕️ **Registro de entradas e saídas** com atualização instantânea das quantidades.
 - 📋 **Histórico de movimentações** com data e usuário responsável.
+
+  
